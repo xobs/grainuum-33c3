@@ -1,50 +1,1078 @@
 <!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<html lang="en">
 
-		<title>reveal.js</title>
+    <head>
+        <meta charset="utf-8">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+        <title>No USB? No Problem.</title>
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+        <meta name="description" content="No USB? No Problem.">
+        <meta name="author" content="Sean Cross">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<script>
-			// More info https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				history: true,
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/solarized.css" id="theme">
 
-				// More info https://github.com/hakimel/reveal.js#dependencies
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <style type="text/css">
+            .attribution {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                font-size: 0.5em;
+            }
+        </style>
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <h1>No USB? No Problem!</h1>
+                    <h3>Grainuum: A software-only USB stack for 48 MHz ARM Cortex M0+ CPUs.</h3>
+                    <p>
+                        <small>Created by <a href="http://xobs.io">Sean Cross</a> / <a href="http://twitter.com/xobs">@xobs</a></small>
+                    </p>
+                </section>
+
+                <section>
+                    <h2>Talk Outline</h2>
+                    <ol>
+                        <li>Why do this thing?</li>
+                        <li>How it's made</li>
+                        <li>What now?</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>About me</h2>
+                </section>
+
+                <section>
+                    <h2>Takeaways</h2>
+                    <ul>
+                        <li>A better understanding low-level USB</li>
+                        <li>Tricks to improve your embedded programming</li>
+                        <li>Know what's important and what's not</li>
+                    </ul>
+                    <aside class="notes">
+                        Say "should" and not "hope" here.
+                    </aside>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>Why do this thing?</h2>
+                    </section>
+
+                    <section>
+                        <h2>USB is easy*</h2>
+                        <div><small>*Easy for users, that is</small></div>
+                        <ul>
+                            <li>Everyone has a USB port</li>
+                            <li>Common[ish] USB frameworks</li>
+                            <li>USB LS is relatively simple</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Fernvale</h2>
+                        <img src="images/fernvale.jpg">
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Orchard (Burning Man)</h2>
+                        <img src="images/orchard-dvt1-bm15-front.jpg">
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Orchard (Burning Man)</h2>
+                        <video data-autoplay class="stretch" loop src="images/bm2015-fasthue.gif.mp4"></video>
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Orchard (Burning Man)</h2>
+                        <img src="images/orchard-dvt1-bm15-back.jpg">
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Orchard (MIT)</h2>
+                        <img src="images/orchard-mit.jpg">
+                    </section>
+
+                    <section>
+                        <h2>FISL / Filippe</h2>
+                    </section>
+
+                    <section>
+                        <h2>Project Palawan</h2>
+                        Can it be done?
+                    </section>
+
+                    <section>
+                        <h2>Other Software Stacks</h2>
+                        <img src="images/v-usb.png">
+                    </section>
+
+                    <section>
+                        <h2>Other Software Stacks</h2>
+                        <img src="images/lemcusb.png">
+                    </section>
+
+                    <section>
+                        <h2>Embedded hardware is a minefield</h2>
+                        <img class="fragment" src="images/irq-wtf.png">
+                        <img class="fragment" src="images/opendrain-wtf.png">
+                        <img class="fragment" src="images/kl02-pinout.png">
+                    </section>
+
+                    <section>
+                        <h2>Special feature: Different D+/D- banks</h2>
+                        <img src="images/KL0PA-keyboard-20-LR-3.jpg">
+                        <span class="attribution">&copy; 2013 Freescale (NXP? Qualcomm?)</span>
+                    </section>
+
+                    <section>
+                        <h2>USB LS signalling is 1.5 MHz</h2>
+                        On a 48 MHz chip, that gives us 32 clock cycles per bit
+                    </section>
+
+                    <section>
+                        <h2>The target CPU: Cortex-M0+ @ 48 MHz</h2>
+                        <img class="fragment" src="images/m0plus-cycles.png">
+                        <aside class="notes">
+                            <li>M0+ (the + is important)</li>
+                            <li>Two-stage pipeline, everything is one cycle</li>
+                                <li>Nearly</li>
+                            <li>No FIQ, no PRIMASK</li>
+                            <li>Really limited Thumb2</li>
+                            <li>Make it happy, word-align everything</li>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Palawan</h2>
+                        <img src="images/palawan.jpg">
+                        <span class="attribution">Palawan, running Grainuum USB stack</span>
+                    </section>
+
+                    <section>
+                        <h2>Grainuum Architecture</h2>
+                        <img src="images/grainuum-overview.png">
+                        <aside class="notes">
+                            This is the architectural overview of GrainuumUSB.
+                            There are lots and lots of books and sites available that describe the top
+                            part of this document, but not too many go into detail on the lower
+                            part.
+
+                            In this chart, the USB-PHY-LL is the only part written in assembler, and
+                            could be replaced with something else if we wanted to port this project
+                            to a different CPU or architecture.  Everything else is C.
+
+                            We'll start below the bottom of the stack there, with USB electrical work.
+                            Then we'll move up to the USB low-level PHY, describe some of the USB
+                            PHY, mention the MAC, and generally gloss over the User Code.
+                        </aside>
+                    </section>
+
+                </section>
+                <section>
+
+                    <section>
+                        <h2>How it's made</h2>
+                    </section>
+
+                    <section>
+                        <h2>USB Electrical</h2>
+                        <img src="images/usb-4wires.jpg">
+                        <aside class="notes">
+                            <ul>
+                                <li>Usually four wires (+5V, D+, D-, GND)</li>
+                                <li>LS vs FS vs HS vs SS</li>
+                                <li>LS has a pull-up resistor across D-</li>
+                                <li>Data lines on LS are 3.3V (oops!)</li>
+                            </ul>
+                            <blockquote>
+                                &ldquo;A USB transceiver is required to withstand a continuous short circuit of
+                                D+ and/or D- to V&nbsp;BUS, GND, other data line, or the cable shield at the connector,
+                                for a minimum of 24 hours without degradation.&rdquo; (7.1.1)
+                            </blockquote>
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Palawan USB Schematic</h2>
+                        <img src="images/palawan-schematic.png">
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Palawan USB Schematic</h2>
+                        <img src="images/palawan-schematic-simple.png">
+                    </section>
+
+                    <section>
+                        <h2>Palawan USB Traces</h2>
+                        <img src="images/palawan-pcb.png">
+                    </section>
+
+                    <section>
+                        <h2>Connecting USB</h2>
+                        <img src="images/usb-connect.png">
+                        <img class="fragment" src="images/usb-err32.png">
+                        <aside class="notes">
+                            If we fab out this board and plug it into a USB port without
+                            loading any firmware on it, the pins float and that pullup
+                            resistor takes effect.  This configuration is enough to
+                            convince the host that we're a real device, and it tries to
+                            talk to it.
+                            
+                            You can see the host detected this board as a USB Low Speed device.
+                            It then gives Error -32 messages.  If we look that up, we see
+                            that it's EPIPE, which means a broken pipe.
+                            
+                            Indeed, the host is trying to access the Endpoint 0 pipe, which
+                            doesn't exist because there is no firmware yet.  This error means
+                            that the hardware is looking good, and it's time to start on the
+                            firmware.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>USB Signaling</h2>
+                        <aside class="notes">
+                            Now that we know what's doing the signalling, we need to know
+                            what signals are being sent across the wires.
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>States</h2>
+                        <img src="images/usb-se0.png">
+                        <span class="attribution">Last part of a USB packet</span>
+                        <aside class="notes">
+                            This is the end part of a USB packet.  Conveniently, it shows
+                            us the three electrical states we'll encounter.
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>States</h2>
+                        <img src="images/usb-anatomy-k.png">
+                        <span class="attribution">K-state</span>
+                        <aside class="notes">
+                            K-state is when both D+ and D- are opposites of one another.
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>States</h2>
+                        <img src="images/usb-anatomy-j.png">
+                        <span class="attribution">J-state</span>
+                        <aside class="notes">
+                            J-state is the opposite of K-state.  When programming the
+                            USB stack, it's very easy to mix up D+ and D- because K-state
+                            and J-state are complete opposites, and often times it doesn't
+                            matter which one is which.
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>States</h2>
+                        <img src="images/usb-anatomy-se0.png">
+                        <span class="attribution">SE0-state</span>
+                        <aside class="notes">
+                            SE0 is where both lines are driven low.  It indicates the
+                            end of a packet.  It is the only time we need to consult
+                            both the D+ and D- lines.
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>States</h2>
+                        <img src="images/usb-anatomy-se1.png">
+                        <span class="attribution">SE1-state?</span>
+                        <aside class="notes">
+                            There is no SE1 state.  If SE1 occurs, it's due to a bug,
+                            or more likely something shorting one of the data lines.
+                            There's no scope trace because this state is never seen.
+                    </section>
+
+                    <section>
+                        <h2>Decoding States</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Transition</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>J → J</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr>
+                                    <td>J → K</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>K → J</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td>K → K</td>
+                                    <td>0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <img class="fragment" src="images/xnor.png">
+                        <aside class="notes">
+                            To decode the bit value, compare the state with the previous state.
+                            This is much like an XNOR gate.  We don't have an XNOR opcode,
+                            so when the time comes to decode we'll need to NOT and then XOR.
+                    </section>
+
+                    <section>
+                        <h2>8-bit preamble / sync at start of packet</h2>
+                        <img src="images/usb-preamble.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>Ages to respond to an interrupt</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Data section</h2>
+                        <img src="images/usb-data.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>11 bytes max on LS</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>SE0 signals EOP</h2>
+                        <img src="images/usb-se0.png">
+                    </section>
+
+                    <section>
+                        <h2>Bit stuffing</h2>
+                        <img src="images/usb-bitstuff.png">
+                    </section>
+
+                    <section>
+                        <h2>Important parts of PHY</h2>
+                        <ul>
+                            <li>Timing and sync are critical</li>
+                            <li>Bit stuffing is really important</li>
+                            <li>Must ignore keepalive packets</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Less important parts of PHY</h2>
+                        <ul>
+                            <li>8 bytes of sync means we've got time</li>
+                            <li>We can largely ignore power requirements</li>
+                            <li>Can mostly ignore the other wire</li>
+                            <li>Can miss up to 3 packets</li>
+                        </ul>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>What about signal integrity?</h2>
+                        <img src="images/palawan-usb-traces.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>Long, uneven traces are fine</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>What about signal integrity?</h2>
+                        <img src="images/eyediagram.jpg">
+                        <aside class="notes">
+                            <ul>
+                                <li>Integrity still really good [eye diagram]</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>What about signal integrity?</h2>
+                        <img src="images/eyediagram-bad.jpg">
+                        <div class="fragment">Faster is not always better</div>
+                        <aside class="notes">
+                            I sent this photo to Bunnie, because it was failing the eye diagram
+                            test.  Turns out the outputs defaulted to "high slew rate", which
+                            caused the signal to overshoot and head into the red parts.  You can
+                            see that on the top and bottom of this photo I took with my phone.
+
+                            Changing it to "slow slew rate" got rid of the overshoot.
+
+                            Tip: anything under about 15 MHz is "slow", and you should use a
+                            slow slew rate for your output.
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>What about signal integrity?</h2>
+                        <img src="images/usb-skew.png">
+                        <aside class="notes">
+                            If you look very very closely at the output, you'll see that the
+                            bits don't even come out at exactly the same time!  This turns
+                            out to be okay, because our skewed bits are still within spec (7.1.2.1)
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Using a 32.768 kHz Crystal</h2>
+                        <img src="images/ltc-xtal.png">
+                        <div><span class="fragment">32768 </span><span class="fragment">&times; 1464</span><span class="fragment"> = 47.972352 MHz</span></div>
+                        <div><big class="fragment">Close enough!</big></div>
+                        <aside class="notes">
+                            For one project, we were souring the clock from a 32.768 kHz watch crystal,
+                            because it turns out affordable 32 kHz crystals are hard to find, whereas
+                            everyone sells 32.768 kHz watch crystals.
+
+                            This chip had a fixed multiplier available of 1464, which if you do the math
+                            yields 47.972352 MHz.
+
+                            Turns out that's close enough for LS to work.
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Development System Setup</h2>
+                        <img src="images/ltc-debug-setup.jpg">
+                        <aside class="notes">
+                            I'm going to take a break for a moment to describe the hardware
+                            that I use to develop this project.
+
+                            This is my development environment.  It is a Raspberry Pi
+                            running OpenOCD.  There are three wires running to the device
+                            being debugged: SWD, Clock, and a reset line.  The reset line
+                            is optional, but it makes it easier to program devices that
+                            are brand-nes and unprogrammed.
+
+                            There aren't even any passive components, it's just a straight
+                            connection between the two devices.
+
+                            This is the cheapest solution we've found to do development on
+                            small embedded devices.  Even better, it's cheap enough that
+                            if we want to have someone else help with development, this
+                            setup is cheap enough to mail to someone along with the hardware
+                            to dev on.
+
+                            The Raspberry Pi contians enough horsepower to run a C compiler
+                            in addition to OpenOCD, meaning all the person has to do to get
+                            up to speed on developing for an embedded device is to plug in
+                            a keyboard, mouse, and TV, and they're done.  No drivers to set
+                            up, no proprietary JTAG boxes, no download links to compilers.
+                            If it works for me, it'll work for them.
+                        </aside>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Other Hardware</h2>
+                        <img src="images/oscilloscope.jpg">
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Other Hardware</h2>
+                        <img src="images/fancy-oscilloscope.jpg">
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Other Hardware</h2>
+                        <img src="images/openvizla.jpg">
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Other Hardware</h2>
+                        <img src="images/beagle.jpg">
+                    </section>
+
+                    <section>
+                        <h2>Low-Level API</h2>
+                        <pre>
+<code class="cpp" data-trim contenteditable style="font-size: 18px;">
+int usbPhyReadI(struct GrainuumUSB *usb,
+                uint8_t samples[11]);
+
+void usbPhyWriteI(struct GrainuumUSB *usb,
+                  const uint8_t buffer[11],
+                  uint32_t count);</code>grainuum-phy-ll.s</pre>
+                        <aside class="notes">
+                            This is the low-level API.  It consists of two functions, one that writes
+                            values out to the pins as a USB packet, and one that reads a USB packet
+                            from pins.
+
+                            These functions take care of packing and unpacking the K and J states, and
+                            must be called with interrupts disabled because they're very timing-sensitive.
+
+                            They could be replaced on other chips to get a portable solution.
+                    </section>
+
+                    <section>
+                        <h2>Reading: Syncronizing to the stream</h2>
+                            <pre><code class="armasm" data-trim contenteditable style="font-size: 18px;">&nbsp;&nbsp;mov rlastval, rval                // Save the bit for use in looking for sync
+.rept 8
+  ldr rval, [rreg]                  // Sample USBDP
+  and rval, rmash                   // Mask off the interesting bit
+  cmp rval, rlastval                // Wait for it to change
+  bne usb_phy_read__sync_wait       // When it changes, go wait for sync pulse
+.endr
+  b usb_phy_read__timeout           // It never changed, so return "timeout".
+</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Reading: Skip the rest of the header</h2>
+                            <pre><code class="armasm" data-trim contenteditable style="font-size: 18px;">.rept 6
+  ldr rval, [rreg]                    // Sample USBDP
+  and rval, rmash                     // Mask off the interesting bit
+  cmp rlastval, rval
+  beq usb_phy_read__start_reading_usb
+  mov rlastval, rval
+  bl usb_phy__wait_27_cycles
+.endr
+  b usb_phy_read__sync_timeout
+</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Reading: 32-cycle inner loop</h2>
+                        <ul>
+                            <li>Sample D+</li>
+                            <li>Sample D-</li>
+                            <li>Shift and mask D+ value</li>
+                            <li>Shift and mask D- value </li>
+                            <li>Remove bit stuffing</li>
+                            <li>JK/KJ -> 0, KK/JJ -> 1</li>
+                            <li>Check for byte boundary</li>
+                            <li>Check for packet overrun</li>
+                            <li>Check for SE0</li>
+                        </ul>
+                        <aside class="notes">
+                            Sampling D+ and D- and doing the xnor to convert the state into a 0 or 1
+                            takes 16 cycles.
+
+                            The remaining 16 cycles are dedicated to checking for SE0 (end of packet),
+                            checking for bit stuffing, and storing the fully-assembled byte in RAM.
+                        </aside>
+                    </section>
+<!--
+                    <section>
+                        <h2>256 cycles before data starts</h2>
+                        <img src="images/m0plus-exception-cycles.png">
+                        <span class="attribution">Cortex M0+ Technical Reference Manual, &copy; 2012 ARM</span>
+                        <aside class="notes">
+                            The M0+ CPU advises that an interrupt has a 15-cycle delay between the instant
+                            it fires and the time the first instruction executes.
+
+                            The preamble is 8 bits, and remember that each bit is 32 cycles.  That gives us
+                            256 cycles to get ready to read the data.
+
+                            That's ages.
+
+                            We want to look for transitions, which means we're limited to the first six bits.
+                            Still, that's 192 cycles, which isn't bad at all.
+                        </aside>
+                    </section>
+-->
+                    <section>
+                        <h2>Writing: Setting Up</h2>
+                        <ul>
+                            <li>Set pins to output</li>
+                            <li>Start sync packet ASAP</li>
+                            <li>Can do setup in between 32-cycle pauses</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Writing: 32-cycle Inner Loop</h2>
+                        <ul>
+                            <li>Write K or J state</li>
+                            <li>Stuff bits</li>
+                            <li>Write up to 11 bytes of data</li>
+                            <li>Write in the correct endianness</li>
+                            <li>No time to preprocess the data</li>
+                            <li>More register starvation</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Writing: End of Packet</h2>
+                        <ul>
+                            <li>Still might have to stuff one bit</li>
+                            <li>Set SE0</li>
+                            <li>Write K state</li>
+                            <li>Set pins back to input</li>
+                        </ul>
+                    </section>
+
+<!--
+                    <section>
+                        <h2>Run from RAM to get cycle-accuracy</h2>
+                        <ul>
+                            <li>[Pic of tight loop]</li>
+                            <li>Great random number generator</li>
+                        </ul>
+                        <pre><code class="armasm" data-trim contenteditable>.section .ramtext</code></pre>
+                    </section>
+                    -->
+
+                     <section>
+                        <h2>Use registers for storing data</h2>
+                        <pre><code class="armasm" data-trim contenteditable>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov wpaddr, wdpclrreg             // 1-cycle
+        ldr wnaddr, [sp, #0]              // 2-cycles</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Hook the writer to the reader for testing</h2>
+                        <img src="images/double-palawan.jpg">
+                        <aside class="notes">
+                            <ul>
+                                <li>FPGA designers have test benches
+                                <li>Being able to test corner cases is handy
+                                    <li>Bit stuffing, word boundaries
+                                <li>USB signal generator
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Low-Level C API</h2>
+                        <pre>
+<code class="cpp" data-trim contenteditable style="font-size: 18px;">
+void grainuumConnect(struct GrainuumUSB *usb);
+void grainuumDisconnect(struct GrainuumUSB *usb);
+
+void grainuumCaptureI(struct GrainuumUSB *usb,
+                      uint8_t packet[12]);
+void grainuumReceivePacket(struct GrainuumUSB *usb);
+</code></pre>
+<span class="attribution">grainuum-phy.c</span>
+                    </section>
+
+                    <section>
+                        <h2>USB Packets</h2>
+                        <img src="images/packet-format.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>PID</li>
+                                <li>Handshake packet</li>
+                                <li>Token packets</li>
+                                <li>Data packets</li>
+                                <li>LS has a maximum of 8-byte packets</li>
+                                <li>Some sort of CRC (CRC-16 or CRC-5)</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Reading: Responding</h2>
+                        <img src="images/usb-responses.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>6.5 bit-times to respond (7.1.18.1)</li>
+                                <li>Examine first byte of data:</li>
+                                <li>IN? Send data, or send NAK if we have no data</li>
+                                <li>OUT, SETUP, DATA0 or DATA1? Send ACK right away</li>
+                                <li>Otherwise, we can worry about it later</li>
+                            </ul>
+                        </aside>
+                    </section>
+<!--
+                    <section>
+                        <h2>USB Packet Sequences</h2>
+                        <ul>
+                            <li>Setup packets</li>
+                            <li>Data transfer packets</li>
+                        </ul>
+                    </section>
+-->
+                    <section>
+                        <h2>Important parts of frames</h2>
+                        <ul>
+                            <li>CRC-16 matters quite a lot</li>
+                            <li>Ordering of frame sequences matters quite a lot</li>
+                            <li>DATA0/DATA1 distinction is important</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Not so important</h2>
+                        <ul>
+                            <li>Can NAK for a long time</li>
+                            <li>On our end we can ignore CRC-16</li>
+                            <li>500 ms to return first data packet</li>
+                            <li>No need to generate CRC-5</li>
+                            <li>Can ignore "address"</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>USB Background -- Other layers</h2>
+                        grainuum-mac.c
+                        <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">struct GrainuumConfig {
+  get_usb_descriptor_t      getDescriptor;
+  usb_set_config_num_t      setConfigNum;
+  usb_get_buffer_t          getReceiveBuffer;
+  usb_data_in_t             receiveData;
+  usb_data_out_start_t      sendDataStarted;
+  usb_data_out_finish_t     sendDataFinished;
+  void                     *data;
+  struct GrainuumUSB       *usb;
+};</code></pre>
+                        <aside class="notes">
+                            <ul>
+                                <li>Descriptors, etc.</li>
+                                <li>LS is limited to Interrupt and Control endpoint types</li>
+                                <li>Only two additional EPs beyond EP0 (8.3.2.2)</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Setup process</h2>
+                        <img src="images/beagle-lots-of-descriptors.png">
+                    </section>
+<!--
+                    <section>
+                        <h2>Data packets are tricky</h2>
+                        <ul>
+                            <li>DATA0 and DATA1 toggle, on a per-EP basis</li>
+                            <li>End of data indicated by NULL packet</li>
+                        </ul>
+                    </section>
+-->
+                    <section>
+                        <h2>Tip: Clever array alignment</h2>
+                        <ul>
+                            <li>PID is only useful in determining response</li>
+                            <li>Actual data begins in byte 1</li>
+                            <li>Actual data ends up on word boundary</li>
+                            <li>CRC-16 ends up on word boundary</li>
+                            <li>OUT/IN packet ends up on word boundary</li>
+                            <li>GRAINUUM_BUFFER()</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Tip: Global variables are handy</h2>
+                        <pre><code class="cpp" data-trim contenteditable style="font-size: 18px;">int loop_count;
+void loop(void) {
+  loop_count++;
+}</code></pre>
+                        <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">(gdb) load
+'minimal.elf' has changed; re-reading symbols.
+Loading section .text, size 0x1b0 lma 0x5900
+Loading section .data, size 0x3a8 lma 0x5ab0
+Start address 0x5938, load size 1368
+Transfer rate: 5 KB/sec, 684 bytes/write.
+(gdb) c
+Continuing.
+^C
+Program received signal SIGINT, Interrupt.
+0x0000141c in ?? ()
+(gdb) p loop_count
+$1 = 91
+(gdb)</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Tip: Easier debugging</h2>
+                        <pre><code class="fragment" data-trim contenteditable style="font-size: 18px;">
+(gdb) b chSysLock</code><code class="fragment" data-trim contenteditable style="font-size: 18px;">Breakpoint 1 at 0x3c (49 locations) </code><code class="fragment" data-trim contenteditable style="font-size: 18px; overflow:hidden;">
+(gdb) info break
+Num     Type           Disp Enb Address    What
+1       breakpoint     keep y   &lt;MULTIPLE&gt;
+1.1                         y     0x0000003c <_vectors+60>
+1.2                         y     0x00002030 in radioSend at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.3                         y     0x000021ca in usb_worker_thread at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.4                         y     0x00003018 in lockSystem at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.5                         y     0x0000309a in suspendThread at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.6                         y     0x000030da in suspendThreadTimeout at ../os/ext/CMSIS/include/core_cmFunc.h:342
+...</code><code class="fragment" data-trim contenteditable style="font-size: 18px;">(gdb) c
+Continuing.
+Note: automatically using hardware breakpoints for read-only addresses.
+Cannot insert hardware breakpoint 1.
+...
+Cannot insert hardware breakpoint 1.
+Could not insert hardware breakpoints:
+You may have requested too many hardware breakpoints/watchpoints.
+
+(gdb)</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Borrow from Javascript</h2>
+                        <pre><code class="cpp" data-trim contenteditable style="font-size: 18px;">#define debugger asm("bkpt #0")</code></pre>
+                        <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">uint8_t USB_Available(uint8_t ep) {
+
+  if (rx_buffer_tail == rx_buffer_head) {
+    debugger;
+    return 0;
+  }
+
+  if (ep != rx_buffer_eps[rx_buffer_tail]) {
+    debugger;
+    return 0;
+  }
+
+  return 1;
+}</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Annoyance: Breaking into the debugger sometimes kills USB</h2>
+                        <img src="images/beagle-break-interrupt.png">
+                    </section>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>What Now?</h2>
+                    </section>
+
+                    <section>
+                        <h2>Current Project Status</h2>
+                        <ul>
+                            <li>Reliable bidirectional tranfers</li>
+                            <li>Common codebase for multiple projects</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Ports</h2>
+                        <ul>
+                            <li>Palawan</li>
+                            <li>Joyboot</li>
+                            <li>Love-to-Code</li>
+                        </ul>
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Possible Device Types</h2>
+                        <img src="images/usb-msc.jpg">
+                        <aside class="notes">
+                            <ul>
+                                <li>Only Control and Interrupt endpoints</li>
+                                <li>Only two additional endpoints</li>
+                                <li>10ms minimum poll interval</li>
+                            </ul>
+                        </aside>
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Possible Device Types</h2>
+                        <img src="images/usb-msc-no.jpg">
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-mic.jpg">
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-mic-no.jpg">
+                    </section>
+
+                    <section data-transition="fade">
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-midi.jpg">
+                        <aside class="notes">
+                            No IrDA
+                        </aside>
+                    </section>
+                    <section data-transition="fade">
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-midi-no.jpg">
+                    </section>
+
+                    <section>
+                        <h2>Possible Device Types</h2>
+                        [DFU?]
+                    </section>
+
+                    <section>
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-keyboard.jpg">
+                    </section>
+
+                    <section>
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-misc.jpg">
+                    </section>
+
+                    <section>
+                        <h2>USB HID devices are "easy"</h2>
+                        <ul>
+                            <li>Fixed format</li>
+                            <li>Only write when you have data</li>
+                            <li>Can get something working quickly</li>
+                            <li>Signal11 makes it easy</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>HID is "easy" on Windows</h2>
+                        <ul>
+                            <li>No driver to install</li>
+                            <li>WinUSB works since XP, but isn't well documented</li>
+                            <li>USB 2.1 doesn't seem to request 0xee</li>
+                            <li>Binary Data Store format also not well documented</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>HID can be more than keypresses</h2>
+                        <ul>
+                            <li>Keyboard LEDs, force feedback</li>
+                            <li>Vendor classes can transfer arbitrary data</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Not super fast</h2>
+                        <img src="images/usb-max-rate.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>8 bytes of payload per packet</li>
+                                <li>10ms minimum poll time</li>
+                                <li>That's okay, not much flash</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>What About Multi-Threading?</h2>
+                        <pre class="fragment"><code data-trim contenteditable style="font-size: 18px; overflow:hidden;">(gdb) info thr
+  Id   Target Id         Frame
+  3    Thread 536871048 (USB poll thread : READY) chSchGoSleepS (
+    newstate=newstate@entry=0 '\000') at ../os/rt/src/chschd.c:270
+  2    Thread 536872776 (user code : CURRENT) 0x00004850 in can_use_pin (pin=&lt;optimized out&gt;)
+    at arduino-io.c:116
+* 1    Thread 536870228 (main : READY) 0x00004850 in can_use_pin (pin=&lt;optimized out&gt;)
+    at arduino-io.c:116
+(gdb)</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Bootloader Implementation</h2>
+                        <img src="images/fadecandy-logo.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>Based on Fadecandy bootloader</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Love-to-Code</h2>
+                        <img src="images/ltc-big.jpg">
+                        <span class="citation">Tomorrow at 4pm</span>
+                        <aside class="notes">
+                            <ul>
+                                <li>KL02-based</li>
+                                <li>Programmed over audio</li>
+                                <li>USB stack programs in ten seconds</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Github Project</h2>
+                        GrainuumUSB
+                    </section>
+
+                    <section>
+                        <h2>Future work</h2>
+                        <ul>
+                            <li>Fully-functional updater</li>
+                            <li>GUI for updating</li>
+                            <li>More platform testing</li>
+                        </ul>
+                    </section>
+
+<!--
+                    <section>
+                        <h2>What about full (or high speed) USB?</h2>
+                        <ul>
+                            <li>Not possible
+                            <li>May be possible with Stupid DMA Tricks
+                        </ul>
+                    </section>
+                    -->
+                </section>
+
+                <section>
+                    <h2>Thank You</h2>
+                    <p>
+                        <small><a href="http://xobs.io">Sean Cross</a> / <a href="http://twitter.com/xobs">@xobs</a></small>
+                    </p>
+                    <p>
+                        <a href="https://grainuum.io/">https://grainuum.io/</a>
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+
+            // More info https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+                multiplex: {
+                    "secret": "14825899011862443539",
+                    "id": "809cfb77bd7d5354",
+                    "url": 'https://reveal-js-multiplex-ccjbegmaii.now.sh' // Location of socket.io server
+                },
+
+                // More info https://github.com/hakimel/reveal.js#dependencies
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true },
+
+                    //{ src: '//cdn.socket.io/socket.io-1.3.5.js', async: true },
+                    //{ src: 'plugin/multiplex/master.js', async: true },
+                    //{ src: 'plugin/multiplex/client.js', async: true }
+                ]
+            });
+
+        </script>
+
+    </body>
 </html>
