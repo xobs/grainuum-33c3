@@ -781,7 +781,7 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);
                         <h2>USB State Machine</h2>
                         <div class="fragment">
                             <div><img src="images/usb-out-dev-statemachine.png"></div>
-                            <span class="attribution"><small>USB 2.0 spec figure 8-32, &copy; 2000 Compaq Computer Corporation, Hewlett-Packard Company, Intel Corporation, Lucent Technologies Inc., Microsoft Corporation, NEC Corporation, Koninklijke Philips Electronics N.V.</small></span>
+                            <small>USB 2.0 spec figure 8-32, &copy; 2000 Compaq Computer Corporation, Hewlett-Packard Company, Intel Corporation, Lucent Technologies Inc., Microsoft Corporation, NEC Corporation, Koninklijke Philips Electronics N.V.</small>
                         </div>
                     </section>
 
@@ -809,8 +809,33 @@ void grainuumProcess(struct GrainuumUSB *usb,
   usb_data_out_start_t      sendDataStarted;
   usb_data_out_finish_t     sendDataFinished;
   void                     *data;
-  struct GrainuumUSB       *usb;
 };</code></pre>
+                        <table class="important-unimportant fragment">
+                            <thead>
+                                <tr>
+                                    <th>Important</th>
+                                    <th>Not Important</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fragment iu-important">
+                                        <ul>
+                                            <li>getDescriptor</li>
+                                            <li>receiveData</li>
+                                        </ul>
+                                    </td>
+                                    <td class="fragment iu-unimportant">
+                                        <ul>
+                                            <li>setConfigNum</li>
+                                            <li>sendDataStarted</li>
+                                            <li>sendDataFinished</li>
+                                            <li>*data</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                         <aside class="notes">
                             <ul>
                                 <li>Descriptors, etc.</li>
@@ -937,6 +962,10 @@ You may have requested too many hardware breakpoints/watchpoints.
                     <section data-transition="fade">
                         <h2>Possible Device Types</h2>
                         <img class="stretch" src="images/usb-midi-no.jpg">
+                    </section>
+
+                    <section>
+                        <h2>So what can we do?</h2>
                     </section>
 
                     <section>
