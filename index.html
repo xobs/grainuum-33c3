@@ -101,7 +101,7 @@
 
                     <section>
                         <h2>USB is easy*</h2>
-                        <div><small>*Easy for users, that is</small></div>
+                        <div class="fragment">*Easy for users, that is</div>
                     </section>
 
                     <section>
@@ -535,19 +535,19 @@
 
                     <section data-transition="fade">
                         <h2>Other Hardware</h2>
-                        <img src="images/oscilloscope.jpg">
+                        <img class="stretch" src="images/oscilloscope.jpg">
                     </section>
                     <section data-transition="fade">
                         <h2>Other Hardware</h2>
-                        <img src="images/fancy-oscilloscope.jpg">
+                        <img class="stretch" src="images/fancy-oscilloscope.jpg">
                     </section>
                     <section data-transition="fade">
                         <h2>Other Hardware</h2>
-                        <img src="images/openvizla.jpg">
+                        <img class="stretch" src="images/openvizla.jpg">
                     </section>
                     <section data-transition="fade">
                         <h2>Other Hardware</h2>
-                        <img src="images/beagle.jpg">
+                        <img class="stretch" src="images/beagle.jpg">
                     </section>
 
                     <section>
@@ -579,6 +579,11 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
                     <section>
                         <h2>USB Packet Format</h2>
                         <img src="images/usb-packet-format.png">
+                        <aside class="notes">
+                            USB packets have three parts: Sync, Data, and EOP.
+
+                            I'll give a brief overview of how both the read and the write functions implement these two.
+                        </aside>
                     </section>
 
                     <section>
@@ -642,11 +647,11 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
                             <li>Sample D-</li>
                             <li>Shift and mask D+ value</li>
                             <li>Shift and mask D- value </li>
-                            <li>Remove bit stuffing</li>
+                            <li>Check for SE0</li>
                             <li>JK/KJ -> 0, KK/JJ -> 1</li>
+                            <li>Remove bit stuffing</li>
                             <li>Check for byte boundary</li>
                             <li>Check for packet overrun</li>
-                            <li>Check for SE0</li>
                         </ul>
                         <aside class="notes">
                             Sampling D+ and D- and doing the xnor to convert the state into a 0 or 1
@@ -661,7 +666,7 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
                         <h2>Writing: 32-cycle Inner Loop</h2>
                         <ul>
                             <li>Write K or J state</li>
-                            <li>Stuff bits</li>
+                            <li>Check for stuffing bits</li>
                             <li>Write up to 11 bytes of data</li>
                             <li>Write in the correct endianness</li>
                             <li>Register starvation is "fun"</li>
@@ -836,6 +841,63 @@ void grainuumProcess(struct GrainuumUSB *usb,
                     </section>
 
                     <section>
+                        <h2>User Code</h2>
+                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">struct GrainuumConfig {
+  get_usb_descriptor_t      getDescriptor;
+  usb_set_config_num_t      setConfigNum;
+  usb_get_buffer_t          getReceiveBuffer;
+  usb_data_in_t             receiveData;
+  usb_data_out_start_t      sendDataStarted;
+  usb_data_out_finish_t     sendDataFinished;
+  void                     *data;
+};</code></pre>
+                        <table class="important-unimportant fragment">
+                            <thead>
+                                <tr>
+                                    <th>Important</th>
+                                    <th>Not Important</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fragment iu-important">
+                                        <ul>
+                                            <li>getDescriptor</li>
+                                            <li>receiveData</li>
+                                        </ul>
+                                    </td>
+                                    <td class="fragment iu-unimportant">
+                                        <ul>
+                                            <li>setConfigNum</li>
+                                            <li>sendDataStarted</li>
+                                            <li>sendDataFinished</li>
+                                            <li>*data</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <aside class="notes">
+                            <ul>
+                                <li>Descriptors, etc.</li>
+                                <li>LS is limited to Interrupt and Control endpoint types</li>
+                                <li>Only two additional EPs beyond EP0 (8.3.2.2)</li>
+                            </ul>
+                        </aside>
+                    </section>
+
+                    <section>
+                        <h2>Setup process</h2>
+                        <img src="images/beagle-lots-of-descriptors.png">
+                    </section>
+
+                    <section>
+                        <h2>Annoyance: Breaking into the debugger sometimes kills USB</h2>
+                        <img src="images/beagle-break-interrupt.png">
+                    </section>
+                </section>
+
+                    <section>
                         <h2>Tip: Global variables are handy</h2>
                         <pre><code class="cpp" data-trim style="font-size: 18px;">int loop_count;
 void loop(void) {
@@ -900,63 +962,6 @@ You may have requested too many hardware breakpoints/watchpoints.
   return 1;
 }</code></pre>
                     </section>
-
-                    <section>
-                        <h2>User Code</h2>
-                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">struct GrainuumConfig {
-  get_usb_descriptor_t      getDescriptor;
-  usb_set_config_num_t      setConfigNum;
-  usb_get_buffer_t          getReceiveBuffer;
-  usb_data_in_t             receiveData;
-  usb_data_out_start_t      sendDataStarted;
-  usb_data_out_finish_t     sendDataFinished;
-  void                     *data;
-};</code></pre>
-                        <table class="important-unimportant fragment">
-                            <thead>
-                                <tr>
-                                    <th>Important</th>
-                                    <th>Not Important</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="fragment iu-important">
-                                        <ul>
-                                            <li>getDescriptor</li>
-                                            <li>receiveData</li>
-                                        </ul>
-                                    </td>
-                                    <td class="fragment iu-unimportant">
-                                        <ul>
-                                            <li>setConfigNum</li>
-                                            <li>sendDataStarted</li>
-                                            <li>sendDataFinished</li>
-                                            <li>*data</li>
-                                        </ul>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <aside class="notes">
-                            <ul>
-                                <li>Descriptors, etc.</li>
-                                <li>LS is limited to Interrupt and Control endpoint types</li>
-                                <li>Only two additional EPs beyond EP0 (8.3.2.2)</li>
-                            </ul>
-                        </aside>
-                    </section>
-
-                    <section>
-                        <h2>Setup process</h2>
-                        <img src="images/beagle-lots-of-descriptors.png">
-                    </section>
-
-                    <section>
-                        <h2>Annoyance: Breaking into the debugger sometimes kills USB</h2>
-                        <img src="images/beagle-break-interrupt.png">
-                    </section>
-                </section>
 
                 <section>
                     <section>
@@ -1089,9 +1094,8 @@ You may have requested too many hardware breakpoints/watchpoints.
 
                     <section>
                         <h2>Port: Joyboot</h2>
-                        <img src="images/palawan.jpg">
                         <img src="images/fadecandy-logo.png">
-                        Micah Scott / scanlime
+                        <div class="citation">Micah Scott / scanlime</div>
                         <aside class="notes">
                             <ul>
                                 <li>Based on Fadecandy bootloader</li>
@@ -1101,7 +1105,7 @@ You may have requested too many hardware breakpoints/watchpoints.
 
                     <section>
                         <h2>Port: Love-to-Code</h2>
-                        <img src="images/ltc-big.jpg">
+                        <img class="stretch" src="images/ltc-big.jpg">
                         <span class="citation">Tomorrow at 4pm</span>
                         <aside class="notes">
                             <ul>
@@ -1126,17 +1130,20 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>Github Project</h2>
-                        GrainuumUSB
-                    </section>
-
-                    <section>
                         <h2>Future work</h2>
                         <ul>
                             <li>Fully-functional updater</li>
                             <li>GUI for updating</li>
                             <li>More platform testing</li>
+                            <li>Produce more Palawan hardware</li>
                         </ul>
+                    </section>
+
+                    <section>
+                        <h2>Github Project</h2>
+                        <div><a href="https://grainuum.io/">https://grainuum.io</a></div>
+                        <div><a href="https://github.com/xobs/grainuum/">https://github.com/xobs/grainuum/</a></div>
+                        <div>MIT License</div>
                     </section>
 
 <!--
