@@ -27,6 +27,19 @@
                 right: 0;
                 font-size: 0.5em;
             }
+
+            .important-unimportant > tbody > tr > td {
+                vertical-align: top;
+            }
+
+            .iu-important {
+                color: darkred;;
+            }
+
+            .iu-unimportant {
+                color: darkgreen;
+            }
+
         </style>
         <!-- Printing and PDF exports -->
         <script>
@@ -175,6 +188,13 @@
                         <span class="attribution">Palawan, running Grainuum USB stack</span>
                     </section>
 
+                </section>
+                <section>
+
+                    <section>
+                        <h2>How it's made</h2>
+                    </section>
+
                     <section>
                         <h2>Grainuum Architecture</h2>
                         <img src="images/grainuum-overview.png">
@@ -190,15 +210,8 @@
 
                             We'll start below the bottom of the stack there, with USB electrical work.
                             Then we'll move up to the USB low-level PHY, describe some of the USB
-                            PHY, mention the MAC, and generally gloss over the User Code.
+                            PHY, mention the State, and generally gloss over the User Code.
                         </aside>
-                    </section>
-
-                </section>
-                <section>
-
-                    <section>
-                        <h2>How it's made</h2>
                     </section>
 
                     <section>
@@ -236,7 +249,7 @@
 
                     <section>
                         <h2>Connecting USB</h2>
-                        <img src="images/usb-connect.png">
+                        <img class="fragment" src="images/usb-connect.png">
                         <img class="fragment" src="images/usb-err32.png">
                         <aside class="notes">
                             If we fab out this board and plug it into a USB port without
@@ -381,22 +394,39 @@
                     </section>
 
                     <section>
-                        <h2>Important parts of PHY</h2>
-                        <ul>
-                            <li>Timing and sync are critical</li>
-                            <li>Bit stuffing is really important</li>
-                            <li>Must ignore keepalive packets</li>
-                        </ul>
-                    </section>
-
-                    <section>
-                        <h2>Less important parts of PHY</h2>
-                        <ul>
-                            <li>8 bytes of sync means we've got time</li>
-                            <li>We can largely ignore power requirements</li>
-                            <li>Can mostly ignore the other wire</li>
-                            <li>Can miss up to 3 packets</li>
-                        </ul>
+                        <h2>Phy: What's important?</h2>
+                        <table class="important-unimportant">
+                            <thead>
+                                <tr>
+                                    <th>Important</th>
+                                    <th>Not Important</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fragment iu-important">
+                                        <ul>
+                                            <li>Timing and sync</li>
+                                            <li>Bit stuffing</li>
+                                            <li>Errors:
+                                                <ul>
+                                                    <li>keepalive</li>
+                                                    <li>framing</li>
+                                                    <li>overflow</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td class="fragment iu-unimportant">
+                                        <ul>
+                                            <li>6 bits to read sync</li>
+                                            <li>Only check one wire</li>
+                                            <li>Miss up to 3 packets</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </section>
 
                     <section data-transition="fade">
@@ -421,7 +451,7 @@
 
                     <section data-transition="fade">
                         <h2>What about signal integrity?</h2>
-                        <img src="images/eyediagram-bad.jpg">
+                        <img class="stretch" src="images/eyediagram-bad.jpg">
                         <div class="fragment">Faster is not always better</div>
                         <aside class="notes">
                             I sent this photo to Bunnie, because it was failing the eye diagram
@@ -680,9 +710,9 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);
                         <aside class="notes">
                             <ul>
                                 <li>PID</li>
-                                <li>Handshake packet</li>
-                                <li>Token packets</li>
-                                <li>Data packets</li>
+                                <li>Handshake packet (NAK, ACK)</li>
+                                <li>Token packets (IN, OUT, SETUP)</li>
+                                <li>Data packets (DATA0, DATA1)</li>
                                 <li>LS has a maximum of 8-byte packets</li>
                                 <li>Some sort of CRC (CRC-16 or CRC-5)</li>
                             </ul>
@@ -702,38 +732,75 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);
                             </ul>
                         </aside>
                     </section>
-<!--
+
                     <section>
-                        <h2>USB Packet Sequences</h2>
+                        <h2>Tip: Clever array alignment</h2>
                         <ul>
-                            <li>Setup packets</li>
-                            <li>Data transfer packets</li>
-                        </ul>
-                    </section>
--->
-                    <section>
-                        <h2>Important parts of frames</h2>
-                        <ul>
-                            <li>CRC-16 matters quite a lot</li>
-                            <li>Ordering of frame sequences matters quite a lot</li>
-                            <li>DATA0/DATA1 distinction is important</li>
+                            <li>PID is only useful in determining response</li>
+                            <li>Actual data begins in byte 1</li>
+                            <li>Actual data ends up on word boundary</li>
+                            <li>CRC-16 ends up on word boundary</li>
+                            <li>OUT/IN packet ends up on word boundary</li>
+                            <li>GRAINUUM_BUFFER()</li>
                         </ul>
                     </section>
 
                     <section>
-                        <h2>Not so important</h2>
-                        <ul>
-                            <li>Can NAK for a long time</li>
-                            <li>On our end we can ignore CRC-16</li>
-                            <li>500 ms to return first data packet</li>
-                            <li>No need to generate CRC-5</li>
-                            <li>Can ignore "address"</li>
-                        </ul>
+                        <h2>Frames: What's important?</h2>
+                        <table class="important-unimportant">
+                            <thead>
+                                <tr>
+                                    <th>Important</th>
+                                    <th>Not Important</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fragment iu-important">
+                                        <ul>
+                                            <li>Quick response</li>
+                                            <li>Frame sequence</li>
+                                            <li>Outgoing CRC-16</li>
+                                            <li>DATA0 vs DATA1</li>
+                                        </ul>
+                                    </td>
+                                    <td class="fragment iu-unimportant">
+                                        <ul>
+                                            <li>NAK allows for deferring</li>
+                                            <li>No need to generate CRC-5</li>
+                                            <li>We can ignore CRC-16</li>
+                                            <li>Can ignore "address"</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </section>
 
                     <section>
-                        <h2>USB Background -- Other layers</h2>
-                        grainuum-mac.c
+                        <h2>USB State Machine</h2>
+                        <div class="fragment">
+                            <div><img src="images/usb-out-dev-statemachine.png"></div>
+                            <span class="attribution"><small>USB 2.0 spec figure 8-32, &copy; 2000 Compaq Computer Corporation, Hewlett-Packard Company, Intel Corporation, Lucent Technologies Inc., Microsoft Corporation, NEC Corporation, Koninklijke Philips Electronics N.V.</small></span>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>USB State Machine API</h2>
+                        <div class="fragment">
+                            <pre><code class="cpp" data-trim contenteditable style="font-size: 18px;">int grainuumSendData(struct GrainuumUSB *usb,
+                     int epnum,
+                     const void *data,
+                     int size);
+
+void grainuumProcess(struct GrainuumUSB *usb,
+                     const uint8_t packet[12]);</code></pre>
+                            <span class="attribution">grainuum-state.c</span>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2>User Code</h2>
                         <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">struct GrainuumConfig {
   get_usb_descriptor_t      getDescriptor;
   usb_set_config_num_t      setConfigNum;
@@ -756,26 +823,6 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);
                     <section>
                         <h2>Setup process</h2>
                         <img src="images/beagle-lots-of-descriptors.png">
-                    </section>
-<!--
-                    <section>
-                        <h2>Data packets are tricky</h2>
-                        <ul>
-                            <li>DATA0 and DATA1 toggle, on a per-EP basis</li>
-                            <li>End of data indicated by NULL packet</li>
-                        </ul>
-                    </section>
--->
-                    <section>
-                        <h2>Tip: Clever array alignment</h2>
-                        <ul>
-                            <li>PID is only useful in determining response</li>
-                            <li>Actual data begins in byte 1</li>
-                            <li>Actual data ends up on word boundary</li>
-                            <li>CRC-16 ends up on word boundary</li>
-                            <li>OUT/IN packet ends up on word boundary</li>
-                            <li>GRAINUUM_BUFFER()</li>
-                        </ul>
                     </section>
 
                     <section>
@@ -855,23 +902,6 @@ You may have requested too many hardware breakpoints/watchpoints.
                         <h2>What Now?</h2>
                     </section>
 
-                    <section>
-                        <h2>Current Project Status</h2>
-                        <ul>
-                            <li>Reliable bidirectional tranfers</li>
-                            <li>Common codebase for multiple projects</li>
-                        </ul>
-                    </section>
-
-                    <section>
-                        <h2>Ports</h2>
-                        <ul>
-                            <li>Palawan</li>
-                            <li>Joyboot</li>
-                            <li>Love-to-Code</li>
-                        </ul>
-                    </section>
-
                     <section data-transition="fade">
                         <h2>Possible Device Types</h2>
                         <img src="images/usb-msc.jpg">
@@ -925,13 +955,21 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
+                        <h2>Possible Device Types</h2>
+                        <img class="stretch" src="images/usb-hid-controller.jpg">
+                    </section>
+
+                    <section>
                         <h2>USB HID devices are "easy"</h2>
-                        <ul>
-                            <li>Fixed format</li>
-                            <li>Only write when you have data</li>
-                            <li>Can get something working quickly</li>
-                            <li>Signal11 makes it easy</li>
-                        </ul>
+                        <img src="images/usb-descriptor-dump.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>Fixed format</li>
+                                <li>Only write when you have data</li>
+                                <li>Can get something working quickly</li>
+                                <li>Signal11 makes it easy</li>
+                            </ul>
+                        </aside>
                     </section>
 
                     <section>
@@ -955,6 +993,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                     <section>
                         <h2>Not super fast</h2>
                         <img src="images/usb-max-rate.png">
+                        <div class="fragment">= 800 bytes/sec</div>
                         <aside class="notes">
                             <ul>
                                 <li>8 bytes of payload per packet</li>
@@ -965,21 +1004,26 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>What About Multi-Threading?</h2>
-                        <pre class="fragment"><code data-trim contenteditable style="font-size: 18px; overflow:hidden;">(gdb) info thr
-  Id   Target Id         Frame
-  3    Thread 536871048 (USB poll thread : READY) chSchGoSleepS (
-    newstate=newstate@entry=0 '\000') at ../os/rt/src/chschd.c:270
-  2    Thread 536872776 (user code : CURRENT) 0x00004850 in can_use_pin (pin=&lt;optimized out&gt;)
-    at arduino-io.c:116
-* 1    Thread 536870228 (main : READY) 0x00004850 in can_use_pin (pin=&lt;optimized out&gt;)
-    at arduino-io.c:116
-(gdb)</code></pre>
+                        <h2>Current Project Status</h2>
+                        <ul>
+                            <li>Reliable bidirectional tranfers</li>
+                            <li>Common codebase for multiple projects</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>Ports</h2>
+                        <ul>
+                            <li>Palawan</li>
+                            <li>Joyboot</li>
+                            <li>Love-to-Code</li>
+                        </ul>
                     </section>
 
                     <section>
                         <h2>Bootloader Implementation</h2>
                         <img src="images/fadecandy-logo.png">
+                        Micah Scott / scanlime
                         <aside class="notes">
                             <ul>
                                 <li>Based on Fadecandy bootloader</li>
@@ -998,6 +1042,19 @@ You may have requested too many hardware breakpoints/watchpoints.
                                 <li>USB stack programs in ten seconds</li>
                             </ul>
                         </aside>
+                    </section>
+
+                    <section>
+                        <h2>What About Multi-Threading?</h2>
+                        <pre class="fragment"><code data-trim contenteditable style="font-size: 18px; overflow:hidden;">(gdb) info thr
+  Id   Target Id         Frame
+  3    Thread 536871048 (USB poll thread : READY) chSchGoSleepS (
+    newstate=newstate@entry=0 '\000') at ../os/rt/src/chschd.c:270
+  2    Thread 536872776 (user code : CURRENT) 0x00004850 in can_use_pin (pin=&lt;optimized out&gt;)
+    at arduino-io.c:116
+* 1    Thread 536870228 (main : READY) 0x00004850 in can_use_pin (pin=&lt;optimized out&gt;)
+    at arduino-io.c:116
+(gdb)</code></pre>
                     </section>
 
                     <section>
