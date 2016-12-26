@@ -102,11 +102,18 @@
                     <section>
                         <h2>USB is easy*</h2>
                         <div><small>*Easy for users, that is</small></div>
-                        <ul>
-                            <li>Everyone has a USB port</li>
-                            <li>Common[ish] USB frameworks</li>
-                            <li>USB LS is relatively simple</li>
-                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>USB is Everywhere</h2>
+                        <img class="stretch" src="images/pokeball-filled.jpg">
+                        <aside class="notes">
+                            <ul>
+                                <li>Everyone has a USB port</li>
+                                <li>Common[ish] USB frameworks</li>
+                                <li>USB LS is relatively simple</li>
+                            </ul>
+                        </aside>
                     </section>
 
                     <section>
@@ -132,8 +139,9 @@
                         <img src="images/orchard-mit.jpg">
                     </section>
 
-                    <section>
-                        <h2>FISL / Filippe</h2>
+                    <section data-transition="fade">
+                        <h2>Gaming Controllers</h2>
+                        <img class="stretch" src="images/usb-hid-controller.jpg">
                     </section>
 
                     <section>
@@ -248,7 +256,7 @@
                     </section>
 
                     <section>
-                        <h2>Connecting USB</h2>
+                        <h2>Detecting USB</h2>
                         <img class="fragment" src="images/usb-connect.png">
                         <img class="fragment" src="images/usb-err32.png">
                         <aside class="notes">
@@ -544,13 +552,18 @@
                     <section>
                         <h2>Low-Level API</h2>
                         <pre>
-<code class="cpp" data-trim contenteditable style="font-size: 18px;">
+<code class="cpp" data-trim style="font-size: 18px;">
 int usbPhyReadI(struct GrainuumUSB *usb,
                 uint8_t samples[11]);
 
 void usbPhyWriteI(struct GrainuumUSB *usb,
                   const uint8_t buffer[11],
                   uint32_t count);</code>grainuum-phy-ll.s</pre>
+                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">void grainuumCaptureI(struct GrainuumUSB *usb,
+                      uint8_t packet[12]);
+
+void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
+                        const void *buffer, int size);</code>grainuum-phy.c</pre>
                         <aside class="notes">
                             This is the low-level API.  It consists of two functions, one that writes
                             values out to the pins as a USB packet, and one that reads a USB packet
@@ -563,8 +576,31 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
                     </section>
 
                     <section>
+                        <h2>USB Packet Format</h2>
+                        <img src="images/usb-packet-format.png">
+                    </section>
+
+                    <section>
+                        <h2>Reading: 256-cycle Sync</h2>
+                        <img src="images/m0plus-exception-cycles.png">
+                        <span class="attribution">Cortex M0+ Technical Reference Manual, &copy; 2012 ARM</span>
+                        <aside class="notes">
+                            The M0+ CPU advises that an interrupt has a 15-cycle delay between the instant
+                            it fires and the time the first instruction executes.
+
+                            The preamble is 8 bits, and remember that each bit is 32 cycles.  That gives us
+                            256 cycles to get ready to read the data.
+
+                            That's ages.
+
+                            We want to look for transitions, which means we're limited to the first six bits.
+                            Still, that's 192 cycles, which isn't bad at all.
+                        </aside>
+                    </section>
+
+                    <section>
                         <h2>Reading: Syncronizing to the stream</h2>
-                            <pre><code class="armasm" data-trim contenteditable style="font-size: 18px;">&nbsp;&nbsp;mov rlastval, rval                // Save the bit for use in looking for sync
+                            <pre><code class="armasm" data-trim style="font-size: 18px;">&nbsp;&nbsp;mov rlastval, rval                // Save the bit for use in looking for sync
 .rept 8
   ldr rval, [rreg]                  // Sample USBDP
   and rval, rmash                   // Mask off the interesting bit
@@ -577,7 +613,7 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
 
                     <section>
                         <h2>Reading: Skip the rest of the header</h2>
-                            <pre><code class="armasm" data-trim contenteditable style="font-size: 18px;">.rept 6
+                            <pre><code class="armasm" data-trim style="font-size: 18px;">.rept 6
   ldr rval, [rreg]                    // Sample USBDP
   and rval, rmash                     // Mask off the interesting bit
   cmp rlastval, rval
@@ -587,6 +623,15 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
 .endr
   b usb_phy_read__sync_timeout
 </code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Writing: SYNC</h2>
+                        <ol class="fragment">
+                            <li>Set pins to output</li>
+                            <li>Write sync</li>
+                            <li>Wait a lot</li>
+                        </ol>
                     </section>
 
                     <section>
@@ -610,33 +655,6 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
                             checking for bit stuffing, and storing the fully-assembled byte in RAM.
                         </aside>
                     </section>
-<!--
-                    <section>
-                        <h2>256 cycles before data starts</h2>
-                        <img src="images/m0plus-exception-cycles.png">
-                        <span class="attribution">Cortex M0+ Technical Reference Manual, &copy; 2012 ARM</span>
-                        <aside class="notes">
-                            The M0+ CPU advises that an interrupt has a 15-cycle delay between the instant
-                            it fires and the time the first instruction executes.
-
-                            The preamble is 8 bits, and remember that each bit is 32 cycles.  That gives us
-                            256 cycles to get ready to read the data.
-
-                            That's ages.
-
-                            We want to look for transitions, which means we're limited to the first six bits.
-                            Still, that's 192 cycles, which isn't bad at all.
-                        </aside>
-                    </section>
--->
-                    <section>
-                        <h2>Writing: Setting Up</h2>
-                        <ul>
-                            <li>Set pins to output</li>
-                            <li>Start sync packet ASAP</li>
-                            <li>Can do setup in between 32-cycle pauses</li>
-                        </ul>
-                    </section>
 
                     <section>
                         <h2>Writing: 32-cycle Inner Loop</h2>
@@ -645,36 +663,49 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
                             <li>Stuff bits</li>
                             <li>Write up to 11 bytes of data</li>
                             <li>Write in the correct endianness</li>
-                            <li>No time to preprocess the data</li>
-                            <li>More register starvation</li>
+                            <li>Register starvation is "fun"</li>
                         </ul>
+                    </section>
+
+                    <section>
+                        <h2>Reading: EOP</h2>
+                        <ol>
+                            <li>Return byte count</li>
+                        </ol>
                     </section>
 
                     <section>
                         <h2>Writing: End of Packet</h2>
-                        <ul>
-                            <li>Still might have to stuff one bit</li>
-                            <li>Set SE0</li>
+                        <ol>
+                            <li>Maybe stuff one bit?</li>
+                            <li>Write SE0</li>
                             <li>Write K state</li>
                             <li>Set pins back to input</li>
-                        </ul>
+                        </ol>
                     </section>
 
-<!--
+                    <section>
+                        <h2>Programming Tricks</h2>
+                    </section>
+
                     <section>
                         <h2>Run from RAM to get cycle-accuracy</h2>
-                        <ul>
-                            <li>[Pic of tight loop]</li>
-                            <li>Great random number generator</li>
-                        </ul>
-                        <pre><code class="armasm" data-trim contenteditable>.section .ramtext</code></pre>
+                        <pre><code class="armasm" data-trim>.section .ramtext</code>grainuum-phy-ll.s</pre>
+
+                        <pre class="fragment"><code class="armasm" data-trim>  .data :
+  {
+    . = ALIGN(4);
+    *(.data .data.* .gnu.linkonce.d.*)
+    . = ALIGN(4);
+    *(.ramtext)
+  } > ram AT > flash</code>KL02Z32-app.ld</pre>
                     </section>
-                    -->
 
                      <section>
                         <h2>Use registers for storing data</h2>
-                        <pre><code class="armasm" data-trim contenteditable>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov wpaddr, wdpclrreg             // 1-cycle
-        ldr wnaddr, [sp, #0]              // 2-cycles</code></pre>
+                        <pre><code class="armasm" data-trim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov wpaddr, wdpclrreg             // 1 cycle
+        ldr wnaddr, [sp, #0]              // 2 cycles
+        ldr rval, [rreg]                  // 1 cycle (Single-cycle port)</code></pre>
                     </section>
 
                     <section>
@@ -693,13 +724,13 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
                     <section>
                         <h2>Low-Level C API</h2>
                         <pre>
-<code class="cpp" data-trim contenteditable style="font-size: 18px;">
+<code class="cpp" data-trim style="font-size: 18px;">
 void grainuumConnect(struct GrainuumUSB *usb);
 void grainuumDisconnect(struct GrainuumUSB *usb);
 
 void grainuumCaptureI(struct GrainuumUSB *usb,
                       uint8_t packet[12]);
-void grainuumReceivePacket(struct GrainuumUSB *usb);
+void grainuumReceivePacket(struct GrainuumUSB *usb);      // (weak)
 </code></pre>
 <span class="attribution">grainuum-phy.c</span>
                     </section>
@@ -735,14 +766,18 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);
 
                     <section>
                         <h2>Tip: Clever array alignment</h2>
-                        <ul>
-                            <li>PID is only useful in determining response</li>
-                            <li>Actual data begins in byte 1</li>
-                            <li>Actual data ends up on word boundary</li>
-                            <li>CRC-16 ends up on word boundary</li>
-                            <li>OUT/IN packet ends up on word boundary</li>
-                            <li>GRAINUUM_BUFFER()</li>
-                        </ul>
+                        <img src="images/usb-packet-alignment.png">
+                        <div class="fragment">Use GRAINUUM_BUFFERs</div>
+                        <aside class="notes">
+                            <ul>
+                                <li>PID is only useful in determining response</li>
+                                <li>Actual data begins in byte 1</li>
+                                <li>Actual data ends up on word boundary</li>
+                                <li>CRC-16 ends up on word boundary</li>
+                                <li>OUT/IN packet ends up on word boundary</li>
+                                <li>GRAINUUM_BUFFER()</li>
+                            </ul>
+                        </aside>
                     </section>
 
                     <section>
@@ -788,7 +823,7 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);
                     <section>
                         <h2>USB State Machine API</h2>
                         <div class="fragment">
-                            <pre><code class="cpp" data-trim contenteditable style="font-size: 18px;">int grainuumSendData(struct GrainuumUSB *usb,
+                            <pre><code class="cpp" data-trim style="font-size: 18px;">int grainuumSendData(struct GrainuumUSB *usb,
                      int epnum,
                      const void *data,
                      int size);
@@ -800,8 +835,74 @@ void grainuumProcess(struct GrainuumUSB *usb,
                     </section>
 
                     <section>
+                        <h2>Tip: Global variables are handy</h2>
+                        <pre><code class="cpp" data-trim style="font-size: 18px;">int loop_count;
+void loop(void) {
+  loop_count++;
+}</code></pre>
+                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">(gdb) load
+'minimal.elf' has changed; re-reading symbols.
+Loading section .text, size 0x1b0 lma 0x5900
+Loading section .data, size 0x3a8 lma 0x5ab0
+Start address 0x5938, load size 1368
+Transfer rate: 5 KB/sec, 684 bytes/write.
+(gdb) c
+Continuing.
+^C
+Program received signal SIGINT, Interrupt.
+0x0000141c in ?? ()
+(gdb) p loop_count
+$1 = 91
+(gdb)</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Tip: Easier debugging</h2>
+                        <pre><code class="fragment" data-trim style="font-size: 18px;">
+(gdb) b chSysLock</code><code class="fragment" data-trim style="font-size: 18px;">Breakpoint 1 at 0x3c (49 locations) </code><code class="fragment" data-trim style="font-size: 18px; overflow:hidden;">
+(gdb) info break
+Num     Type           Disp Enb Address    What
+1       breakpoint     keep y   &lt;MULTIPLE&gt;
+1.1                         y     0x0000003c <_vectors+60>
+1.2                         y     0x00002030 in radioSend at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.3                         y     0x000021ca in usb_worker_thread at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.4                         y     0x00003018 in lockSystem at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.5                         y     0x0000309a in suspendThread at ../os/ext/CMSIS/include/core_cmFunc.h:342
+1.6                         y     0x000030da in suspendThreadTimeout at ../os/ext/CMSIS/include/core_cmFunc.h:342
+...</code><code class="fragment" data-trim style="font-size: 18px;">(gdb) c
+Continuing.
+Note: automatically using hardware breakpoints for read-only addresses.
+Cannot insert hardware breakpoint 1.
+...
+Cannot insert hardware breakpoint 1.
+Could not insert hardware breakpoints:
+You may have requested too many hardware breakpoints/watchpoints.
+
+(gdb)</code></pre>
+                    </section>
+
+                    <section>
+                        <h2>Borrow from Javascript</h2>
+                        <pre><code class="cpp" data-trim style="font-size: 18px;">#define debugger asm("bkpt #0")</code></pre>
+                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">uint8_t USB_Available(uint8_t ep) {
+
+  if (rx_buffer_tail == rx_buffer_head) {
+    debugger;
+    return 0;
+  }
+
+  if (ep != rx_buffer_eps[rx_buffer_tail]) {
+    debugger;
+    return 0;
+  }
+
+  return 1;
+}</code></pre>
+                    </section>
+
+                    <section>
                         <h2>User Code</h2>
-                        <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">struct GrainuumConfig {
+                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">struct GrainuumConfig {
   get_usb_descriptor_t      getDescriptor;
   usb_set_config_num_t      setConfigNum;
   usb_get_buffer_t          getReceiveBuffer;
@@ -848,72 +949,6 @@ void grainuumProcess(struct GrainuumUSB *usb,
                     <section>
                         <h2>Setup process</h2>
                         <img src="images/beagle-lots-of-descriptors.png">
-                    </section>
-
-                    <section>
-                        <h2>Tip: Global variables are handy</h2>
-                        <pre><code class="cpp" data-trim contenteditable style="font-size: 18px;">int loop_count;
-void loop(void) {
-  loop_count++;
-}</code></pre>
-                        <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">(gdb) load
-'minimal.elf' has changed; re-reading symbols.
-Loading section .text, size 0x1b0 lma 0x5900
-Loading section .data, size 0x3a8 lma 0x5ab0
-Start address 0x5938, load size 1368
-Transfer rate: 5 KB/sec, 684 bytes/write.
-(gdb) c
-Continuing.
-^C
-Program received signal SIGINT, Interrupt.
-0x0000141c in ?? ()
-(gdb) p loop_count
-$1 = 91
-(gdb)</code></pre>
-                    </section>
-
-                    <section>
-                        <h2>Tip: Easier debugging</h2>
-                        <pre><code class="fragment" data-trim contenteditable style="font-size: 18px;">
-(gdb) b chSysLock</code><code class="fragment" data-trim contenteditable style="font-size: 18px;">Breakpoint 1 at 0x3c (49 locations) </code><code class="fragment" data-trim contenteditable style="font-size: 18px; overflow:hidden;">
-(gdb) info break
-Num     Type           Disp Enb Address    What
-1       breakpoint     keep y   &lt;MULTIPLE&gt;
-1.1                         y     0x0000003c <_vectors+60>
-1.2                         y     0x00002030 in radioSend at ../os/ext/CMSIS/include/core_cmFunc.h:342
-1.3                         y     0x000021ca in usb_worker_thread at ../os/ext/CMSIS/include/core_cmFunc.h:342
-1.4                         y     0x00003018 in lockSystem at ../os/ext/CMSIS/include/core_cmFunc.h:342
-1.5                         y     0x0000309a in suspendThread at ../os/ext/CMSIS/include/core_cmFunc.h:342
-1.6                         y     0x000030da in suspendThreadTimeout at ../os/ext/CMSIS/include/core_cmFunc.h:342
-...</code><code class="fragment" data-trim contenteditable style="font-size: 18px;">(gdb) c
-Continuing.
-Note: automatically using hardware breakpoints for read-only addresses.
-Cannot insert hardware breakpoint 1.
-...
-Cannot insert hardware breakpoint 1.
-Could not insert hardware breakpoints:
-You may have requested too many hardware breakpoints/watchpoints.
-
-(gdb)</code></pre>
-                    </section>
-
-                    <section>
-                        <h2>Borrow from Javascript</h2>
-                        <pre><code class="cpp" data-trim contenteditable style="font-size: 18px;">#define debugger asm("bkpt #0")</code></pre>
-                        <pre class="fragment"><code class="cpp" data-trim contenteditable style="font-size: 18px;">uint8_t USB_Available(uint8_t ep) {
-
-  if (rx_buffer_tail == rx_buffer_head) {
-    debugger;
-    return 0;
-  }
-
-  if (ep != rx_buffer_eps[rx_buffer_tail]) {
-    debugger;
-    return 0;
-  }
-
-  return 1;
-}</code></pre>
                     </section>
 
                     <section>
@@ -984,11 +1019,6 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>Possible Device Types</h2>
-                        <img class="stretch" src="images/usb-hid-controller.jpg">
-                    </section>
-
-                    <section>
                         <h2>USB HID devices are "easy"</h2>
                         <img src="images/usb-descriptor-dump.png">
                         <aside class="notes">
@@ -1003,12 +1033,15 @@ You may have requested too many hardware breakpoints/watchpoints.
 
                     <section>
                         <h2>HID is "easy" on Windows</h2>
-                        <ul>
-                            <li>No driver to install</li>
-                            <li>WinUSB works since XP, but isn't well documented</li>
-                            <li>USB 2.1 doesn't seem to request 0xee</li>
-                            <li>Binary Data Store format also not well documented</li>
-                        </ul>
+                        <img src="images/usb-hid-windows.png">
+                        <aside class="notes">
+                            <ul>
+                                <li>No driver to install</li>
+                                <li>WinUSB works since XP, but isn't well documented</li>
+                                <li>USB 2.1 doesn't seem to request 0xee</li>
+                                <li>Binary Data Store format also not well documented</li>
+                            </ul>
+                        </aside>
                     </section>
 
                     <section>
@@ -1020,7 +1053,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>Not super fast</h2>
+                        <h2>HID Isn't Super Fast</h2>
                         <img src="images/usb-max-rate.png">
                         <div class="fragment">= 800 bytes/sec</div>
                         <aside class="notes">
@@ -1041,16 +1074,18 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>Ports</h2>
-                        <ul>
-                            <li>Palawan</li>
-                            <li>Joyboot</li>
-                            <li>Love-to-Code</li>
-                        </ul>
+                        <h2>Port: Palawan</h2>
+                        <img src="images/palawan.png">
+                        Micah Scott / scanlime
+                        <aside class="notes">
+                            <ul>
+                                <li>Based on Fadecandy bootloader</li>
+                            </ul>
+                        </aside>
                     </section>
 
                     <section>
-                        <h2>Bootloader Implementation</h2>
+                        <h2>Port: Joyboot</h2>
                         <img src="images/fadecandy-logo.png">
                         Micah Scott / scanlime
                         <aside class="notes">
@@ -1061,7 +1096,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>Love-to-Code</h2>
+                        <h2>Port: Love-to-Code</h2>
                         <img src="images/ltc-big.jpg">
                         <span class="citation">Tomorrow at 4pm</span>
                         <aside class="notes">
@@ -1075,7 +1110,7 @@ You may have requested too many hardware breakpoints/watchpoints.
 
                     <section>
                         <h2>What About Multi-Threading?</h2>
-                        <pre class="fragment"><code data-trim contenteditable style="font-size: 18px; overflow:hidden;">(gdb) info thr
+                        <pre class="fragment"><code data-trim style="font-size: 18px; overflow:hidden;">(gdb) info thr
   Id   Target Id         Frame
   3    Thread 536871048 (USB poll thread : READY) chSchGoSleepS (
     newstate=newstate@entry=0 '\000') at ../os/rt/src/chschd.c:270
