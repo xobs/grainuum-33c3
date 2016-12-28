@@ -78,8 +78,24 @@
                     </ol>
                 </section>
 
-                <section>
+                <section data-transition="fade">
                     <h2>About me</h2>
+                    <div class="fragment">
+                        <img src="images/sd-card.jpg">
+                        <div>Image &copy; 2014 Wikipedia (No author defined)</div>
+                    </div>
+                </section>
+
+                <section data-transition="fade">
+                    <h2>About me</h2>
+                    <img class="stretch" src="images/novena-photo.jpg">
+                    <div>Image &copy; 2014 Crowd Supply</div>
+                </section>
+
+                <section data-transition="fade">
+                    <h2>About me</h2>
+                    <img class="stretch" src="images/senoko_dvt1.jpg">
+                    <div>Image &copy; 2014 Crowd Supply</div>
                 </section>
 
                 <section>
@@ -102,6 +118,9 @@
                     <section>
                         <h2>USB is easy*</h2>
                         <div class="fragment">*Easy for users, that is</div>
+                        <p>
+                            <div class="fragment" style="text-decoration: line-through; text-decoration-color: red;"><code>C:\> SET BLASTER=A220 I5 D1</code></div>
+                        </p>
                     </section>
 
                     <section>
@@ -561,10 +580,7 @@ void usbPhyWriteI(struct GrainuumUSB *usb,
                   const uint8_t buffer[11],
                   uint32_t count);</code>grainuum-phy-ll.s</pre>
                         <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">void grainuumCaptureI(struct GrainuumUSB *usb,
-                      uint8_t packet[12]);
-
-void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
-                        const void *buffer, int size);</code>grainuum-phy.c</pre>
+                      uint8_t packet[12]);</code>grainuum-phy.c</pre>
                         <aside class="notes">
                             This is the low-level API.  It consists of two functions, one that writes
                             values out to the pins as a USB packet, and one that reads a USB packet
@@ -575,7 +591,7 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
 
                             They could be replaced on other chips to get a portable solution.
                     </section>
-
+<!--
                     <section>
                         <h2>USB Packet Format</h2>
                         <img src="images/usb-packet-format.png">
@@ -689,7 +705,7 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
                             <li>Set pins back to input</li>
                         </ol>
                     </section>
-
+-->
                     <section>
                         <h2>Programming Tricks</h2>
                     </section>
@@ -701,7 +717,7 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
                         <pre class="fragment"><code class="armasm" data-trim>  .data :
   {
     . = ALIGN(4);
-    *(.data .data.* .gnu.linkonce.d.*)
+    *(.data .data.*)
     . = ALIGN(4);
     *(.ramtext)
   } > ram AT > flash</code>KL02Z32-app.ld</pre>
@@ -729,14 +745,16 @@ void grainuumWriteQueue(struct GrainuumUSB *usb, int epnum,
 
                     <section>
                         <h2>Low-Level C API</h2>
-                        <pre>
-<code class="cpp" data-trim style="font-size: 18px;">
+                        <pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">
 void grainuumConnect(struct GrainuumUSB *usb);
 void grainuumDisconnect(struct GrainuumUSB *usb);
-
+</code></pre>
+<pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">
+void grainuumReceivePacket(struct GrainuumUSB *usb);      // (weak)
+</code></pre>
+<pre class="fragment"><code class="cpp" data-trim style="font-size: 18px;">
 void grainuumCaptureI(struct GrainuumUSB *usb,
                       uint8_t packet[12]);
-void grainuumReceivePacket(struct GrainuumUSB *usb);      // (weak)
 </code></pre>
 <span class="attribution">grainuum-phy.c</span>
                     </section>
@@ -771,7 +789,7 @@ void grainuumReceivePacket(struct GrainuumUSB *usb);      // (weak)
                     </section>
 
                     <section>
-                        <h2>Tip: Clever array alignment</h2>
+                        <h2>Tip: Clever array [mis]-alignment</h2>
                         <img src="images/usb-packet-alignment.png">
                         <div class="fragment">Use GRAINUUM_BUFFERs</div>
                         <aside class="notes">
@@ -863,6 +881,7 @@ void grainuumProcess(struct GrainuumUSB *usb,
                                     <td class="fragment iu-important">
                                         <ul>
                                             <li>getDescriptor</li>
+                                            <li>getReceiveBuffer</li>
                                             <li>receiveData</li>
                                         </ul>
                                     </td>
@@ -895,7 +914,6 @@ void grainuumProcess(struct GrainuumUSB *usb,
                         <h2>Annoyance: Breaking into the debugger sometimes kills USB</h2>
                         <img src="images/beagle-break-interrupt.png">
                     </section>
-                </section>
 
                     <section>
                         <h2>Tip: Global variables are handy</h2>
@@ -963,7 +981,9 @@ You may have requested too many hardware breakpoints/watchpoints.
 }</code></pre>
                     </section>
 
+                </section>
                 <section>
+
                     <section>
                         <h2>What Now?</h2>
                     </section>
@@ -1006,7 +1026,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                     </section>
 
                     <section>
-                        <h2>So what can we do?</h2>
+                        <h2>So what <i>can</i> &nbsp;we do?</h2>
                     </section>
 
                     <section>
@@ -1052,6 +1072,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                         </aside>
                     </section>
 
+<!--
                     <section>
                         <h2>HID can be more than keypresses</h2>
                         <ul>
@@ -1059,7 +1080,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                             <li>Vendor classes can transfer arbitrary data</li>
                         </ul>
                     </section>
-
+-->
                     <section>
                         <h2>HID Isn't Super Fast</h2>
                         <img src="images/usb-max-rate.png">
@@ -1084,7 +1105,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                     <section>
                         <h2>Port: Palawan</h2>
                         <img src="images/palawan.jpg">
-                        ChibiOS, IRQ-based loop polling.
+                        ChibiOS, polling using system timer.
                         <aside class="notes">
                             <ul>
                                 <li>The original platform</li>
@@ -1096,6 +1117,7 @@ You may have requested too many hardware breakpoints/watchpoints.
                         <h2>Port: Joyboot</h2>
                         <img src="images/fadecandy-logo.png">
                         <div class="citation">Micah Scott / scanlime</div>
+                        <small>Polling in main loop</small>
                         <aside class="notes">
                             <ul>
                                 <li>Based on Fadecandy bootloader</li>
@@ -1197,7 +1219,7 @@ You may have requested too many hardware breakpoints/watchpoints.
 
             // More info https://github.com/hakimel/reveal.js#configuration
             Reveal.initialize({
-                controls: true,
+                controls: false,
                 progress: true,
                 history: true,
                 center: true,
